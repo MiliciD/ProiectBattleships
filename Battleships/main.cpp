@@ -10,18 +10,18 @@ using namespace std;
 const int BOARD_SIZE = 10;
 
 enum class CellState {
-    Empty,
-    Ship,
-    Hit,
-    Miss
+    Empty, // fara nava, nelovit
+    Ship, // cu nava, nelovit
+    Hit, // cu nava, lovit
+    Miss // fara nava, lovit
 };
 
-class Board {
+class Board { // Tabbla de joc de 10 x 10
 private:
-    CellState grid[BOARD_SIZE][BOARD_SIZE];
+    CellState grid[BOARD_SIZE][BOARD_SIZE]; // starea fiecarei celule
 
 public:
-    Board() {
+    Board() { // constructor: initializeaza tabla goala
         for (int i = 0; i < BOARD_SIZE; ++i) {
             for (int j = 0; j < BOARD_SIZE; ++j) {
                 grid[i][j] = CellState::Empty;
@@ -29,26 +29,26 @@ public:
         }
     }
 
-    bool isInside(int row, int col) const {
+    bool isInside(int row, int col) const { // verifica daca coordonatele sunt in interiorul tablei
         return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
     }
 
-    bool canPlaceShip(int row, int col, int length, bool horizontal) const {
+    bool canPlaceShip(int row, int col, int length, bool horizontal) const { // verifica daca o nava poate fi plasata
         if (horizontal) {
-            if (col + length > BOARD_SIZE) return false;
+            if (col + length > BOARD_SIZE) return false; // iese din tabla
             for (int j = col; j < col + length; ++j) {
                 if (grid[row][j] != CellState::Empty) return false;
             }
         } else {
             if (row + length > BOARD_SIZE) return false;
             for (int i = row; i < row + length; ++i) {
-                if (grid[i][col] != CellState::Empty) return false;
+                if (grid[i][col] != CellState::Empty) return false; // suprapunere
             }
         }
         return true;
     }
 
-    bool placeShip(int row, int col, int length, bool horizontal) {
+    bool placeShip(int row, int col, int length, bool horizontal) { // plaseaza o nava pe tabla
         if (!canPlaceShip(row, col, length, horizontal)) {
             return false;
         }
@@ -66,35 +66,36 @@ public:
     }
 
     CellState hit(int row, int col) {
+        // proceseaza o lovitura la coordonatele date
         if (!isInside(row, col)) {
             cout << "Coordonate in afara tablei!\n";
             return CellState::Empty;
         }
 
-        if (grid[row][col] == CellState::Ship) {
-            grid[row][col] = CellState::Hit;
+        if (grid[row][col] == CellState::Ship) { // nava lovita
+            grid[row][col] = CellState::Hit;     // marcheaza ca lovita
             cout << "Lovitura reusita! (" << row << ", " << col << ")\n";
             return CellState::Hit;
         } else if (grid[row][col] == CellState::Empty) {
             grid[row][col] = CellState::Miss;
-            cout << "Ai lovit apa. (" << row << ", " << col << ")\n";
+            cout << "Ai lovit apa. (" << row << ", " << col << ")\n"; // marcheaza ca miss
             return CellState::Miss;
         } else {
-            cout << "Ai mai tras deja in aceasta pozitie. (" 
+            cout << "Ai mai tras deja in aceasta pozitie. ("    // deja lovit anterior
                  << row << ", " << col << ")\n";
             return grid[row][col];
         }
     }
 
-    CellState getCell(int row, int col) const {
+    CellState getCell(int row, int col) const { 
         if (!isInside(row, col)) {
-            return CellState::Empty;
+            return CellState::Empty; // coordonate invalide
         }
         return grid[row][col];
     }
 
-    bool allShipsSunk() const {
-        for (int i = 0; i < BOARD_SIZE; ++i)
+    bool allShipsSunk() const {                 // verifica daca toate navele au fost scufundate
+        for (int i = 0; i < BOARD_SIZE; ++i)    // pentru a alege un castigator
             for (int j = 0; j < BOARD_SIZE; ++j)
                 if (grid[i][j] == CellState::Ship)
                     return false;
@@ -112,7 +113,7 @@ public:
         }
     }
 
-    void print(bool revealShips = true) const {
+    void print(bool revealShips = true) const { // afiseaza tabla in consola
         cout << "   ";
         for (int j = 0; j < BOARD_SIZE; ++j)
             cout << j << " ";
@@ -142,6 +143,7 @@ struct ShipDef {
 };
 
 vector<ShipDef> getShipTypes() {
+    // definirea a 5 tipuri de nave standardizate
     vector<ShipDef> ships;
     ships.push_back({"Nava lungime 3 (orizontala)", 3, true});
     ships.push_back({"Nava lungime 4 (orizontala)", 4, true});
@@ -168,6 +170,7 @@ bool parseCoord(const string& s, int& value) {
 }
 
 void placeShipsManually(Board& board, const vector<ShipDef>& shipTypes) {
+    // Plasare manuala pentru jucator
     cout << "\n--- Plasare nave pentru JUCATOR (MANUAL) ---\n";
 
     for (const auto& ship : shipTypes) {
@@ -222,7 +225,7 @@ void placeShipsManually(Board& board, const vector<ShipDef>& shipTypes) {
     board.print(true);
 }
 
-// Random pentru oricine, cu mesaj custom
+// Random pentru oricine, cu mesaj custom (mai rapid pentru a incepe jocul)
 void placeShipsRandomGeneric(Board& board, const vector<ShipDef>& shipTypes, const string& ownerName, bool showBoardAfter) {
     cout << "\n--- " << ownerName << " isi plaseaza navele ALEATOR ---\n";
 
@@ -335,7 +338,7 @@ PlayerTurnResult playerTurn(Board& computerBoard) {
 }
 
 int main() {
-    srand(static_cast<unsigned>(time(nullptr)));
+    srand(static_cast<unsigned>(time(nullptr))); // initializare generator de numere aleatoare
 
     Board playerBoard;
     Board computerBoard;
